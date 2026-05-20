@@ -1,0 +1,1683 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>✨ Magic Tracing Practice ✨</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Edu+VIC+WA+NT+Beginner:wght@600&family=Andika:wght@700&family=Patrick+Hand&display=swap');
+
+    :root {
+      --bg: #111827;
+      --panel: #16213e;
+      --panel-2: #0f3460;
+      --accent: #e94560;
+      --accent-2: #00d4ff;
+      --gold: #f9a826;
+      --good: #21c55d;
+      --danger: #ef4444;
+      --text: #ffffff;
+      --muted: #cbd5e1;
+      --shadow: rgba(0, 0, 0, 0.35);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(233, 69, 96, 0.22), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(0, 212, 255, 0.18), transparent 34%),
+        var(--bg);
+      color: var(--text);
+      font-family: 'Andika', 'Microsoft JhengHei', system-ui, sans-serif;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    button, select, input, textarea { font-family: inherit; }
+
+    button, select, input[type="text"], input[type="number"], textarea {
+      border: none;
+      border-radius: 14px;
+      outline: none;
+    }
+
+    button, select, input[type="text"], input[type="number"] { min-height: 44px; }
+
+    button {
+      padding: 10px 16px;
+      background: var(--accent);
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 5px 12px var(--shadow);
+      transition: transform 0.12s ease, filter 0.12s ease, background 0.12s ease;
+      user-select: none;
+    }
+
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px) scale(0.98); }
+    button.secondary { background: var(--panel-2); border: 2px solid rgba(255, 255, 255, 0.16); }
+    button.success { background: var(--good); }
+    button.warning { background: var(--gold); color: #111827; }
+    button.ghost { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: none; }
+    button.danger { background: var(--danger); }
+    button.small { min-height: 34px; padding: 7px 10px; font-size: 13px; border-radius: 10px; }
+
+    select, input[type="text"], input[type="number"], textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(15, 52, 96, 0.98);
+      color: white;
+      border: 2px solid rgba(233, 69, 96, 0.72);
+      font-size: 16px;
+    }
+
+    textarea { resize: vertical; min-height: 76px; }
+    input[type="range"] { width: 100%; }
+    input[type="file"] { width: 100%; padding: 10px 0; color: var(--muted); }
+    .hidden { display: none !important; }
+
+    .app {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      gap: 14px;
+    }
+
+    .topbar {
+      position: relative;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .title-block h1 {
+      margin: 0 0 4px;
+      font-size: clamp(24px, 3.2vw, 42px);
+      letter-spacing: 1px;
+    }
+
+    .title-block p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .tabs, .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .tabs { justify-content: flex-end; }
+    .tab-btn.active { background: var(--accent-2); color: #06111f; }
+
+    .main { min-height: 0; flex: 1; display: grid; }
+    .view { min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+    .game-panel { min-height: 0; display: grid; grid-template-rows: auto 1fr; gap: 14px; }
+
+    .control-panel, .editor-panel {
+      background: rgba(22, 33, 62, 0.82);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 28px var(--shadow);
+    }
+
+    .control-panel { padding: 14px; }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.35fr) minmax(170px, 0.9fr) minmax(160px, auto) repeat(5, auto);
+      gap: 10px;
+      align-items: center;
+    }
+
+    .question-prompt {
+      grid-column: 1 / -1;
+      color: #fff;
+      font-weight: 800;
+      font-size: clamp(18px, 2vw, 26px);
+      line-height: 1.4;
+      padding: 6px 2px 0;
+    }
+
+    .session-note {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      padding-top: 2px;
+    }
+
+    .size-controls {
+      display: grid;
+      grid-template-columns: 44px minmax(82px, 1fr) 44px;
+      gap: 6px;
+      align-items: center;
+      min-width: 160px;
+    }
+
+    .size-controls .size-btn {
+      min-height: 44px;
+      padding: 8px 10px;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    #textSizeLabel {
+      min-height: 44px;
+      display: grid;
+      place-items: center;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #dbeafe;
+      font-weight: 900;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .canvas-area {
+      position: relative;
+      min-height: 360px;
+      width: 100%;
+      display: grid;
+      place-items: center;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: min(92vw, 920px);
+      height: min(58vh, 560px);
+      min-height: 330px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)), var(--panel);
+      border-radius: 24px;
+      box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.15), 0 0 30px rgba(233, 69, 96, 0.36);
+      overflow: hidden;
+    }
+
+    .canvas-wrapper::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 18px;
+      border: 2px dashed rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 24px;
+    }
+
+    #bgCanvas { z-index: 1; }
+    #drawCanvas { z-index: 5; cursor: crosshair; transition: filter 0.2s ease; touch-action: none; }
+
+    #celebrationCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 40;
+      pointer-events: none;
+      border-radius: 0;
+    }
+
+    @keyframes magicPop {
+      0% { transform: scale(1); filter: drop-shadow(0 0 0 #ff00ff); }
+      50% { transform: scale(1.03); filter: drop-shadow(0 0 26px #00d4ff); }
+      100% { transform: scale(1); filter: drop-shadow(0 0 12px #ff00ff); }
+    }
+    .success-anim { animation: magicPop 0.65s ease-out; }
+
+    .score-board {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(92vw, 430px);
+      background: rgba(15, 52, 96, 0.96);
+      padding: 32px;
+      border-radius: 24px;
+      text-align: center;
+      z-index: 50;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.62);
+      border: 3px solid #ff00ff;
+      animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+      100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    #scoreText { margin: 0; font-size: clamp(42px, 7vw, 64px); color: var(--gold); }
+    #praiseText { margin: 14px 0 22px; font-size: clamp(24px, 4vw, 34px); font-weight: 900; }
+
+    .editor-panel {
+      min-height: 0;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: minmax(240px, 340px) minmax(320px, 1fr);
+      gap: 14px;
+    }
+
+    .question-list, .question-form {
+      min-height: 0;
+      background: rgba(255, 255, 255, 0.045);
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: auto;
+    }
+
+    .list-head, .form-head {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .list-head h2, .form-head h2 { margin: 0; font-size: 20px; }
+
+    .question-card {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: rgba(15, 52, 96, 0.72);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      cursor: pointer;
+    }
+    .question-card.active { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.10); }
+    .q-index { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 12px; background: rgba(255, 255, 255, 0.12); font-weight: 900; }
+    .q-title { font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .q-meta { margin-top: 3px; color: var(--muted); font-size: 12px; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; border-radius: 999px; background: rgba(233, 69, 96, 0.18); color: #fecdd3; font-size: 12px; font-weight: 900; }
+
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    .field.full { grid-column: 1 / -1; }
+    label { color: #dbeafe; font-size: 14px; font-weight: 900; }
+    .hint { margin-top: 3px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .preview-box {
+      min-height: 120px;
+      display: grid;
+      place-items: center;
+      border: 2px dashed rgba(255, 255, 255, 0.17);
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+    }
+    .preview-box img { max-width: 100%; max-height: 190px; object-fit: contain; }
+    .empty-state { color: var(--muted); text-align: center; padding: 20px; line-height: 1.6; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      z-index: 100;
+      min-width: min(92vw, 320px);
+      padding: 13px 16px;
+      border-radius: 16px;
+      background: rgba(6, 17, 31, 0.95);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.42);
+      text-align: center;
+      font-weight: 800;
+      pointer-events: none;
+    }
+
+    .image-note {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(249, 168, 38, 0.13);
+      border: 1px solid rgba(249, 168, 38, 0.34);
+      color: #fde68a;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.62);
+      backdrop-filter: blur(4px);
+    }
+    .modal-card {
+      position: relative;
+      width: min(94vw, 920px);
+      max-height: min(88vh, 760px);
+      overflow: auto;
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(15, 52, 96, 0.97);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55);
+    }
+    .modal-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+    .modal-head h3 { margin: 0 0 4px; font-size: 24px; }
+    .modal-head p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .modal-search { margin-bottom: 14px; }
+    .picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+    .picker-chip {
+      min-height: 50px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.06);
+      color: white;
+      font-weight: 900;
+      font-size: 18px;
+      cursor: pointer;
+      text-align: center;
+      box-shadow: none;
+    }
+    .picker-chip small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .picker-chip:hover { border-color: rgba(0, 212, 255, 0.66); transform: translateY(-1px); filter: brightness(1.06); }
+    .picker-empty { grid-column: 1 / -1; padding: 18px; border-radius: 16px; text-align: center; color: var(--muted); background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.15); }
+
+    @media (max-width: 1100px) {
+      .controls-grid { grid-template-columns: 1fr 1fr 1fr; }
+      .controls-grid button { width: 100%; }
+      .size-controls { width: 100%; }
+    }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .app { min-height: 100vh; height: auto; }
+      .topbar { grid-template-columns: 1fr; }
+      .tabs { justify-content: flex-start; }
+      .main, .view, .game-panel { min-height: auto; }
+      .controls-grid { grid-template-columns: 1fr 1fr; }
+      .canvas-wrapper { width: 100%; height: 54vh; min-height: 340px; }
+      .editor-panel { grid-template-columns: 1fr; }
+      .field-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .app { padding: 12px; }
+      .controls-grid { grid-template-columns: 1fr; }
+      .question-prompt { font-size: 18px; }
+      .canvas-wrapper { min-height: 300px; }
+      .picker-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="celebrationCanvas"></canvas>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="title-block">
+        <h1>✨ Magic Tracing Practice ✨</h1>
+        <p>可編輯題庫・可匯入/匯出 JSON・支援文字與圖片描寫題</p>
+      </div>
+      <div class="tabs">
+        <button id="playTabBtn" class="tab-btn active">Practice</button>
+        <button id="editorTabBtn" class="tab-btn secondary">Question Editor</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="playView" class="view game-panel">
+        <div class="control-panel">
+          <div class="controls-grid">
+            <select id="questionSelect" aria-label="Select question"></select>
+            <select id="playFontSelect" aria-label="Handwriting font for text questions">
+              <option value="'Edu VIC WA NT Beginner', cursive">Font: Textbook (標準字)</option>
+              <option value="'Patrick Hand', cursive">Font: Patrick Hand (可愛手寫)</option>
+              <option value="'Comic Sans MS', cursive">Font: Comic Sans</option>
+              <option value="'Andika', sans-serif">Font: Andika (端正印刷)</option>
+            </select>
+            <div class="size-controls" aria-label="Text size controls">
+              <button id="sizeDownBtn" class="ghost size-btn" type="button">−</button>
+              <span id="textSizeLabel">Size 115%</span>
+              <button id="sizeUpBtn" class="ghost size-btn" type="button">＋</button>
+            </div>
+            <button id="pickLetterBtn" class="ghost">Choose Letter</button>
+            <button id="pickWordBtn" class="ghost">Choose Word</button>
+            <button id="clearBtn" class="secondary">Clear</button>
+            <button id="submitBtn">Submit</button>
+            <button id="nextBtnTop" class="success">Next</button>
+            <div id="questionPrompt" class="question-prompt"></div>
+            <div id="sessionNote" class="session-note">可直接用視窗快速選字母或單字，也可用下拉選單切換題目。</div>
+          </div>
+        </div>
+
+        <div class="canvas-area">
+          <div class="canvas-wrapper">
+            <canvas id="bgCanvas"></canvas>
+            <canvas id="drawCanvas"></canvas>
+          </div>
+        </div>
+
+        <div id="scoreBoard" class="score-board hidden">
+          <h2 id="scoreText">Score: 0</h2>
+          <p id="praiseText"></p>
+          <button id="nextBtn">Next Question</button>
+        </div>
+      </section>
+
+      <section id="editorView" class="view editor-panel hidden">
+        <aside class="question-list">
+          <div class="list-head">
+            <h2>題目列表</h2>
+            <span id="questionCount" class="badge">0 items</span>
+          </div>
+          <div class="editor-toolbar" style="margin-bottom: 12px;">
+            <button id="addTextBtn" class="small success">+ Text</button>
+            <button id="addImageBtn" class="small warning">+ Image</button>
+          </div>
+          <div id="questionList"></div>
+        </aside>
+
+        <section class="question-form">
+          <div class="form-head">
+            <h2>Question Editor</h2>
+            <div class="editor-toolbar">
+              <button id="saveBrowserBtn" class="small success">Save</button>
+              <button id="exportJsonBtn" class="small">Export JSON</button>
+              <button id="importJsonBtn" class="small secondary">Import JSON</button>
+              <button id="resetDefaultBtn" class="small danger">Reset</button>
+              <input id="importJsonInput" type="file" accept=".json,application/json" class="hidden" />
+            </div>
+          </div>
+
+          <div id="editorEmpty" class="empty-state hidden">目前沒有題目。請新增 Text 或 Image 題。</div>
+
+          <div id="editorFields">
+            <div class="field-grid">
+              <div class="field">
+                <label for="editType">Question Type</label>
+                <select id="editType">
+                  <option value="text">Text / Word</option>
+                  <option value="image">Image-based</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="editPrompt">Prompt / 題目說明</label>
+                <input id="editPrompt" type="text" placeholder="例如：Trace the word." />
+              </div>
+
+              <div id="textFields" class="field full">
+                <label for="editTargetText">Practice Text / 要練習的字詞</label>
+                <input id="editTargetText" type="text" placeholder="Aa / apple / sight word..." />
+                <div class="hint">可輸入單一字母、大小寫組合或單字，例如：Aa、cat、beautiful。</div>
+              </div>
+
+              <div id="imageFields" class="field full hidden">
+                <label for="editImageInput">Question Image / 圖片題</label>
+                <input id="editImageInput" type="file" accept="image/*" />
+                <div class="preview-box" id="imagePreviewBox"><span class="hint">尚未上傳圖片</span></div>
+                <div class="image-note">圖片題評分會以圖片中「非白色／非透明」區域作為描寫目標。建議使用透明 PNG、SVG 或白底線稿。</div>
+              </div>
+
+              <div class="field">
+                <label for="editFont">Text Font</label>
+                <select id="editFont">
+                  <option value="'Edu VIC WA NT Beginner', cursive">Font: Textbook (標準字)</option>
+                  <option value="'Patrick Hand', cursive">Font: Patrick Hand (可愛手寫)</option>
+                  <option value="'Comic Sans MS', cursive">Font: Comic Sans</option>
+                  <option value="'Andika', sans-serif">Font: Andika (端正印刷)</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="editTextScale">Text Size: <span id="textScaleValue">115%</span></label>
+                <input id="editTextScale" type="range" min="75" max="160" value="115" />
+                <div class="hint">調整文字題在手寫板上的顯示大小。</div>
+              </div>
+
+              <div class="field">
+                <label for="editGuideOpacity">Guide Opacity: <span id="opacityValue">40%</span></label>
+                <input id="editGuideOpacity" type="range" min="15" max="80" value="40" />
+                <div class="hint">調整背景字詞或圖片提示的透明度。</div>
+              </div>
+
+              <div class="field">
+                <label for="editStrokeWidth">Pen Width</label>
+                <input id="editStrokeWidth" type="number" min="4" max="36" value="12" />
+              </div>
+
+              <div class="field">
+                <label for="editPenColor">Pen Color</label>
+                <select id="editPenColor">
+                  <option value="#ff00ff">Magic Pink</option>
+                  <option value="#00d4ff">Sky Blue</option>
+                  <option value="#f9a826">Golden</option>
+                  <option value="#ffffff">White</option>
+                  <option value="#21c55d">Green</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="editor-toolbar">
+              <button id="moveUpBtn" class="secondary">Move Up</button>
+              <button id="moveDownBtn" class="secondary">Move Down</button>
+              <button id="duplicateBtn" class="warning">Duplicate</button>
+              <button id="deleteQuestionBtn" class="danger">Delete Question</button>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="pickerModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" id="pickerBackdrop"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+      <div class="modal-head">
+        <div>
+          <h3 id="pickerTitle">Choose</h3>
+          <p id="pickerSubtitle">請選擇要練習的項目</p>
+        </div>
+        <button id="closePickerBtn" class="ghost small" aria-label="Close picker">✕</button>
+      </div>
+      <div id="pickerSearchWrap" class="modal-search hidden">
+        <input id="pickerSearchInput" type="text" placeholder="搜尋單字..." />
+      </div>
+      <div id="pickerGrid" class="picker-grid"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    const STORAGE_KEY = "magic_tracing_question_bank_v10_font_persist";
+    const ACTIVE_FONT_STORAGE_KEY = "magic_tracing_active_font_v10";
+    const DEFAULT_TEXT_FONT = "'Edu VIC WA NT Beginner', cursive";
+    const DEFAULT_TEXT_SCALE = 1.15;
+    const MIN_TEXT_SCALE = 0.75;
+    const MAX_TEXT_SCALE = 1.60;
+    const FONT_OPTIONS = [
+      "'Edu VIC WA NT Beginner', cursive",
+      "'Patrick Hand', cursive",
+      "'Comic Sans MS', cursive",
+      "'Andika', sans-serif"
+    ];
+    const FONT_MIGRATIONS = new Map([
+      ["Trebuchet MS, Arial, sans-serif", DEFAULT_TEXT_FONT],
+      ["Comic Sans MS, 'Comic Neue', cursive", "'Patrick Hand', cursive"],
+      ["Georgia, serif", "'Andika', sans-serif"],
+      ["'Courier New', monospace", "'Andika', sans-serif"]
+    ]);
+
+    const BUILT_IN_LETTERS = Array.from({ length: 26 }, (_, index) => String.fromCharCode(65 + index));
+    const BUILT_IN_WORDS = [
+      "apple", "bear", "cat",
+      "duck", "egg", "fish",
+      "goat", "hen", "insect", "jet",
+      "kite", "lion", "monkey",
+      "nose", "ox", "pig",
+      "queen", "rabbit", "sun",
+      "turtle", "umbrella", "vest", "water",
+      "fox", "yo-yo", "zebra",
+      "ant", "banana", "cake",
+      "dog", "elephant", "fan",
+      "girl", "hat", "ink", "jam",
+      "key", "leg", "milk",
+      "nurse", "octopus", "pen",
+      "quiet", "red", "sea",
+      "toy", "up", "van", "watch",
+      "box", "yellow", "zoo"
+    ];
+
+    const drawCanvas = document.getElementById("drawCanvas");
+    const bgCanvas = document.getElementById("bgCanvas");
+    const drawCtx = drawCanvas.getContext("2d", { willReadFrequently: true });
+    const bgCtx = bgCanvas.getContext("2d", { willReadFrequently: true });
+    const wrapper = document.querySelector(".canvas-wrapper");
+
+    const celebrationCanvas = document.getElementById("celebrationCanvas");
+    const celebrationCtx = celebrationCanvas.getContext("2d");
+
+    const playView = document.getElementById("playView");
+    const editorView = document.getElementById("editorView");
+    const playTabBtn = document.getElementById("playTabBtn");
+    const editorTabBtn = document.getElementById("editorTabBtn");
+    const questionSelect = document.getElementById("questionSelect");
+    const questionPrompt = document.getElementById("questionPrompt");
+    const sessionNote = document.getElementById("sessionNote");
+    const playFontSelect = document.getElementById("playFontSelect");
+    const textSizeLabel = document.getElementById("textSizeLabel");
+    const scoreBoard = document.getElementById("scoreBoard");
+    const scoreText = document.getElementById("scoreText");
+    const praiseText = document.getElementById("praiseText");
+
+    const questionList = document.getElementById("questionList");
+    const questionCount = document.getElementById("questionCount");
+    const editorFields = document.getElementById("editorFields");
+    const editorEmpty = document.getElementById("editorEmpty");
+    const editType = document.getElementById("editType");
+    const editPrompt = document.getElementById("editPrompt");
+    const editTargetText = document.getElementById("editTargetText");
+    const editFont = document.getElementById("editFont");
+    const editTextScale = document.getElementById("editTextScale");
+    const textScaleValue = document.getElementById("textScaleValue");
+    const editGuideOpacity = document.getElementById("editGuideOpacity");
+    const opacityValue = document.getElementById("opacityValue");
+    const editStrokeWidth = document.getElementById("editStrokeWidth");
+    const editPenColor = document.getElementById("editPenColor");
+    const textFields = document.getElementById("textFields");
+    const imageFields = document.getElementById("imageFields");
+    const editImageInput = document.getElementById("editImageInput");
+    const imagePreviewBox = document.getElementById("imagePreviewBox");
+    const importJsonInput = document.getElementById("importJsonInput");
+    const toast = document.getElementById("toast");
+
+    const pickerModal = document.getElementById("pickerModal");
+    const pickerBackdrop = document.getElementById("pickerBackdrop");
+    const pickerTitle = document.getElementById("pickerTitle");
+    const pickerSubtitle = document.getElementById("pickerSubtitle");
+    const pickerGrid = document.getElementById("pickerGrid");
+    const pickerSearchWrap = document.getElementById("pickerSearchWrap");
+    const pickerSearchInput = document.getElementById("pickerSearchInput");
+
+    let library = createDefaultLibrary();
+    let selectedIndex = 0;
+    let isDrawing = false;
+    let lastPointer = null;
+    let targetMask = null;
+    let renderToken = 0;
+    let saveTimer = null;
+    let activeTextFont = DEFAULT_TEXT_FONT;
+
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    function normalizeFontFamily(fontFamily) {
+      const value = String(fontFamily || DEFAULT_TEXT_FONT).trim();
+      const migrated = FONT_MIGRATIONS.get(value) || value || DEFAULT_TEXT_FONT;
+      return FONT_OPTIONS.includes(migrated) ? migrated : DEFAULT_TEXT_FONT;
+    }
+
+    function loadActiveTextFont() {
+      activeTextFont = normalizeFontFamily(localStorage.getItem(ACTIVE_FONT_STORAGE_KEY) || DEFAULT_TEXT_FONT);
+      playFontSelect.value = activeTextFont;
+    }
+
+    function getActiveTextFont() {
+      activeTextFont = normalizeFontFamily(activeTextFont || playFontSelect.value || DEFAULT_TEXT_FONT);
+      return activeTextFont;
+    }
+
+    function setActiveTextFont(fontFamily) {
+      activeTextFont = normalizeFontFamily(fontFamily);
+      localStorage.setItem(ACTIVE_FONT_STORAGE_KEY, activeTextFont);
+      playFontSelect.value = activeTextFont;
+      return activeTextFont;
+    }
+
+    function createId() {
+      return "q_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function starSvgDataUri() {
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 360"><rect width="500" height="360" fill="white"/><path d="M250 35 L302 146 L424 161 L335 247 L357 327 L250 277 L143 327 L165 247 L76 161 L198 146 Z" fill="none" stroke="#111827" stroke-width="28" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+      return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    }
+
+    function makeTextQuestion({ prompt, targetText, fontFamily = DEFAULT_TEXT_FONT, guideOpacity = 0.4, strokeWidth = 12, penColor = "#ff00ff", presetType = "", presetValue = "", textScale = DEFAULT_TEXT_SCALE }) {
+      return { id: createId(), type: "text", prompt, targetText, imageData: "", fontFamily, guideOpacity, strokeWidth, penColor, presetType, presetValue, textScale };
+    }
+
+    function makeLetterQuestion(letter) {
+      return makeTextQuestion({
+        prompt: "Trace the letter.",
+        targetText: `${letter} ${letter.toLowerCase()}`,
+        fontFamily: DEFAULT_TEXT_FONT,
+        guideOpacity: 0.4,
+        strokeWidth: 12,
+        penColor: "#ff00ff",
+        presetType: "letter",
+        presetValue: letter
+      });
+    }
+
+    function makeWordQuestion(word) {
+      return makeTextQuestion({
+        prompt: "Trace the word.",
+        targetText: word,
+        fontFamily: DEFAULT_TEXT_FONT,
+        guideOpacity: 0.38,
+        strokeWidth: 12,
+        penColor: "#00d4ff",
+        presetType: "word",
+        presetValue: word.toLowerCase()
+      });
+    }
+
+    function createDefaultLibrary() {
+      return {
+        version: 9,
+        title: "Magic Tracing Practice",
+        questions: [
+          ...BUILT_IN_LETTERS.map(makeLetterQuestion),
+          ...BUILT_IN_WORDS.map(makeWordQuestion),
+          {
+            id: createId(),
+            type: "image",
+            prompt: "Trace the star image.",
+            targetText: "star",
+            imageData: starSvgDataUri(),
+            fontFamily: DEFAULT_TEXT_FONT,
+            guideOpacity: 0.38,
+            strokeWidth: 12,
+            penColor: "#f9a826",
+            textScale: DEFAULT_TEXT_SCALE,
+            presetType: "sample-image",
+            presetValue: "star"
+          }
+        ]
+      };
+    }
+
+    function normalizeLibrary(raw) {
+      const input = raw && typeof raw === "object" ? raw : {};
+      const questions = Array.isArray(input.questions) ? input.questions : [];
+      const normalizedQuestions = questions.map((q) => ({
+        id: q.id || createId(),
+        type: q.type === "image" ? "image" : "text",
+        prompt: String(q.prompt || (q.type === "image" ? "Trace the image." : "Trace the word.")),
+        targetText: String(q.targetText || q.text || q.letter || ""),
+        imageData: typeof q.imageData === "string" ? q.imageData : "",
+        fontFamily: normalizeFontFamily(q.fontFamily),
+        guideOpacity: clamp(Number(q.guideOpacity ?? 0.4), 0.15, 0.8),
+        strokeWidth: clamp(Number(q.strokeWidth ?? 12), 4, 36),
+        penColor: String(q.penColor || "#ff00ff"),
+        textScale: clamp(Number(q.textScale ?? DEFAULT_TEXT_SCALE), MIN_TEXT_SCALE, MAX_TEXT_SCALE),
+        presetType: String(q.presetType || ""),
+        presetValue: String(q.presetValue || "")
+      })).filter((q) => q.type === "image" || q.targetText.trim());
+
+      return {
+        version: 9,
+        title: String(input.title || "Magic Tracing Practice"),
+        questions: normalizedQuestions.length ? normalizedQuestions : createDefaultLibrary().questions
+      };
+    }
+
+    function getQuestion() {
+      if (!library.questions.length) return null;
+      selectedIndex = clamp(selectedIndex, 0, library.questions.length - 1);
+      return library.questions[selectedIndex];
+    }
+
+    function getTextScale(q = getQuestion()) {
+      return clamp(Number(q?.textScale ?? DEFAULT_TEXT_SCALE), MIN_TEXT_SCALE, MAX_TEXT_SCALE);
+    }
+
+    function updateTextSizeLabel(q = getQuestion()) {
+      if (!textSizeLabel) return;
+      textSizeLabel.textContent = `Size ${Math.round(getTextScale(q) * 100)}%`;
+    }
+
+    function syncTextSizeEditor(q = getQuestion()) {
+      const value = Math.round(getTextScale(q) * 100);
+      if (editTextScale) editTextScale.value = String(value);
+      if (textScaleValue) textScaleValue.textContent = `${value}%`;
+      updateTextSizeLabel(q);
+    }
+
+    function changeTextSize(delta) {
+      const q = getQuestion();
+      if (!q || q.type !== "text") {
+        showToast("Text size is only for text questions.");
+        return;
+      }
+      const nextScale = clamp(Math.round((getTextScale(q) + delta) * 100) / 100, MIN_TEXT_SCALE, MAX_TEXT_SCALE);
+      q.textScale = nextScale;
+      syncTextSizeEditor(q);
+      saveToBrowser(false);
+      scoreBoard.classList.add("hidden");
+      clearDrawing(false);
+      resizeCanvas();
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.remove("hidden");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.add("hidden"), 1600);
+    }
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+    }
+
+    function playSparkleSound(x, y) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(420 + ((x + y) % 520), audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.018, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.08);
+    }
+
+    function playPopSound() {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(420, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(105, audioCtx.currentTime + 0.12);
+      gainNode.gain.setValueAtTime(0.085, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.12);
+    }
+
+    function playWinSound() {
+      if (!audioCtx) return;
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, index) => {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        const start = audioCtx.currentTime + index * 0.1;
+        gainNode.gain.setValueAtTime(0, start);
+        gainNode.gain.linearRampToValueAtTime(0.11, start + 0.035);
+        gainNode.gain.linearRampToValueAtTime(0, start + 0.32);
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.start(start);
+        osc.stop(start + 0.34);
+      });
+    }
+
+    let particles = [];
+    let particleAnimationId = null;
+
+    function resizeCelebrationCanvas() {
+      celebrationCanvas.width = window.innerWidth;
+      celebrationCanvas.height = window.innerHeight;
+    }
+
+    function spawnConfetti(kind) {
+      resizeCelebrationCanvas();
+      const count = kind === "mega" ? 180 : 80;
+      const palette = ["#ff00ff", "#00d4ff", "#f9a826", "#ffffff", "#21c55d"];
+      for (let i = 0; i < count; i++) {
+        const sideBurst = kind === "mega" && i % 2 === 0;
+        const x = sideBurst ? (i % 4 === 0 ? 0 : celebrationCanvas.width) : celebrationCanvas.width / 2;
+        const y = sideBurst ? celebrationCanvas.height * 0.82 : celebrationCanvas.height * 0.55;
+        const angle = sideBurst ? (x === 0 ? -Math.PI / 3 : -2 * Math.PI / 3) + (Math.random() - 0.5) * 0.7 : -Math.PI / 2 + (Math.random() - 0.5) * 1.55;
+        const speed = 4 + Math.random() * 7;
+        particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, size: 5 + Math.random() * 8, rotate: Math.random() * Math.PI, spin: -0.2 + Math.random() * 0.4, life: 90 + Math.random() * 70, color: palette[Math.floor(Math.random() * palette.length)] });
+      }
+      if (!particleAnimationId) animateConfetti();
+    }
+
+    function animateConfetti() {
+      celebrationCtx.clearRect(0, 0, celebrationCanvas.width, celebrationCanvas.height);
+      particles = particles.filter((p) => p.life > 0);
+      particles.forEach((p) => {
+        p.life -= 1;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.14;
+        p.vx *= 0.992;
+        p.rotate += p.spin;
+        celebrationCtx.save();
+        celebrationCtx.translate(p.x, p.y);
+        celebrationCtx.rotate(p.rotate);
+        celebrationCtx.globalAlpha = Math.max(0, Math.min(1, p.life / 90));
+        celebrationCtx.fillStyle = p.color;
+        celebrationCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.62);
+        celebrationCtx.restore();
+      });
+      if (particles.length) particleAnimationId = requestAnimationFrame(animateConfetti);
+      else {
+        particleAnimationId = null;
+        celebrationCtx.clearRect(0, 0, celebrationCanvas.width, celebrationCanvas.height);
+      }
+    }
+
+    function switchView(viewName) {
+      const editor = viewName === "editor";
+      editorView.classList.toggle("hidden", !editor);
+      playView.classList.toggle("hidden", editor);
+      editorTabBtn.classList.toggle("active", editor);
+      playTabBtn.classList.toggle("active", !editor);
+      if (editor) renderEditor();
+      else resizeCanvas();
+    }
+
+    function saveToBrowser(show = true) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+      if (show) showToast("Saved to this browser.");
+    }
+
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => saveToBrowser(false), 250);
+    }
+
+    function loadFromBrowser() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          library = normalizeLibrary(JSON.parse(saved));
+          selectedIndex = 0;
+          renderAll();
+          showToast("Loaded saved question bank.");
+          return;
+        } catch (err) {
+          console.warn("Failed to load saved question bank.", err);
+        }
+      }
+      library = createDefaultLibrary();
+      renderAll();
+    }
+
+    function exportJson() {
+      const payload = JSON.stringify(library, null, 2);
+      const blob = new Blob([payload], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.download = `magic-tracing-questions-${date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast("JSON exported.");
+    }
+
+    function importJsonFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          library = normalizeLibrary(JSON.parse(reader.result));
+          selectedIndex = 0;
+          saveToBrowser(false);
+          renderAll();
+          showToast("JSON imported.");
+        } catch (err) {
+          alert("Import failed. Please choose a valid JSON file.");
+          console.error(err);
+        } finally {
+          importJsonInput.value = "";
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function renderAll() {
+      renderQuestionSelect();
+      renderEditor();
+      resizeCanvas();
+    }
+
+    function getQuestionTitle(q) {
+      if (!q) return "Untitled";
+      if (q.type === "image") return q.targetText?.trim() || q.prompt || "Image question";
+      return q.targetText?.trim() || "Text question";
+    }
+
+    function updateSessionNote() {
+      const q = getQuestion();
+      if (!q) {
+        sessionNote.textContent = "目前沒有題目，請到 Question Editor 新增，或用快速選擇建立字母 / 單字題。";
+        return;
+      }
+      const label = q.type === "image" ? `圖片題：${getQuestionTitle(q)}` : (q.presetType === "letter" ? `目前練習字母：${q.targetText}` : q.presetType === "word" ? `目前練習單字：${q.targetText}` : `目前題目：${getQuestionTitle(q)}`);
+      sessionNote.textContent = `${label} ｜ 可用 Choose Letter / Choose Word 快速切換。`;
+    }
+
+    function renderQuestionSelect() {
+      questionSelect.innerHTML = "";
+      library.questions.forEach((q, index) => {
+        const option = document.createElement("option");
+        option.value = String(index);
+        const label = q.type === "image" ? "🖼️" : (q.presetType === "letter" ? "🔠" : "🔤");
+        option.textContent = `${label} ${index + 1}. ${getQuestionTitle(q)}`;
+        questionSelect.appendChild(option);
+      });
+      questionSelect.value = String(selectedIndex);
+      updateSessionNote();
+    }
+
+    function renderEditor() {
+      questionCount.textContent = `${library.questions.length} items`;
+      questionList.innerHTML = "";
+      if (!library.questions.length) {
+        editorFields.classList.add("hidden");
+        editorEmpty.classList.remove("hidden");
+        return;
+      }
+      editorFields.classList.remove("hidden");
+      editorEmpty.classList.add("hidden");
+
+      library.questions.forEach((q, index) => {
+        const card = document.createElement("div");
+        card.className = "question-card" + (index === selectedIndex ? " active" : "");
+        card.innerHTML = `
+          <div class="q-index">${index + 1}</div>
+          <div>
+            <div class="q-title">${escapeHtml(getQuestionTitle(q))}</div>
+            <div class="q-meta">${q.type === "image" ? "Image-based question" : "Text / Word question"} · ${escapeHtml(q.prompt || "")}</div>
+          </div>
+          <span class="badge">${q.type === "image" ? "Image" : q.presetType === "letter" ? "Letter" : q.presetType === "word" ? "Word" : "Text"}</span>
+        `;
+        card.addEventListener("click", () => {
+          selectedIndex = index;
+          syncEditorFields();
+          renderQuestionSelect();
+          renderEditor();
+          resizeCanvas();
+        });
+        questionList.appendChild(card);
+      });
+      syncEditorFields();
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
+    }
+
+    function syncEditorFields() {
+      const q = getQuestion();
+      if (!q) return;
+      q.fontFamily = normalizeFontFamily(q.fontFamily);
+      editType.value = q.type;
+      editPrompt.value = q.prompt;
+      editTargetText.value = q.targetText;
+      editFont.value = q.fontFamily;
+      q.textScale = getTextScale(q);
+      syncTextSizeEditor(q);
+      editGuideOpacity.value = String(Math.round(q.guideOpacity * 100));
+      opacityValue.textContent = `${Math.round(q.guideOpacity * 100)}%`;
+      editStrokeWidth.value = String(q.strokeWidth);
+      editPenColor.value = q.penColor;
+      textFields.classList.toggle("hidden", q.type !== "text");
+      imageFields.classList.toggle("hidden", q.type !== "image");
+      playFontSelect.value = getActiveTextFont();
+      renderImagePreview(q.imageData);
+    }
+
+    function renderImagePreview(imageData) {
+      imagePreviewBox.innerHTML = "";
+      if (imageData) {
+        const img = document.createElement("img");
+        img.alt = "Question image preview";
+        img.src = imageData;
+        imagePreviewBox.appendChild(img);
+      } else {
+        const span = document.createElement("span");
+        span.className = "hint";
+        span.textContent = "尚未上傳圖片";
+        imagePreviewBox.appendChild(span);
+      }
+    }
+
+    function updateCurrentQuestion(patch, fullRender = false) {
+      const q = getQuestion();
+      if (!q) return;
+      Object.assign(q, patch);
+      if (patch.fontFamily) q.fontFamily = normalizeFontFamily(q.fontFamily);
+      if (Object.prototype.hasOwnProperty.call(patch, "textScale")) q.textScale = getTextScale(q);
+      syncTextSizeEditor(q);
+      scheduleSave();
+      renderQuestionSelect();
+      if (fullRender) renderEditor();
+      resizeCanvas();
+    }
+
+    function addQuestion(type) {
+      const q = {
+        id: createId(),
+        type,
+        prompt: type === "image" ? "Trace the image." : "Trace the word.",
+        targetText: type === "image" ? "image" : "new",
+        imageData: type === "image" ? "" : undefined,
+        fontFamily: DEFAULT_TEXT_FONT,
+        guideOpacity: 0.4,
+        strokeWidth: 12,
+        penColor: type === "image" ? "#f9a826" : "#ff00ff",
+        textScale: DEFAULT_TEXT_SCALE,
+        presetType: "",
+        presetValue: ""
+      };
+      library.questions.push(q);
+      selectedIndex = library.questions.length - 1;
+      saveToBrowser(false);
+      renderAll();
+      switchView("editor");
+    }
+
+    function duplicateQuestion() {
+      const q = getQuestion();
+      if (!q) return;
+      const copy = JSON.parse(JSON.stringify(q));
+      copy.id = createId();
+      copy.prompt = q.prompt + " copy";
+      copy.presetType = "";
+      copy.presetValue = "";
+      library.questions.splice(selectedIndex + 1, 0, copy);
+      selectedIndex += 1;
+      saveToBrowser(false);
+      renderAll();
+    }
+
+    function deleteQuestion() {
+      if (!library.questions.length) return;
+      const q = getQuestion();
+      if (!confirm(`Delete "${getQuestionTitle(q)}"?`)) return;
+      library.questions.splice(selectedIndex, 1);
+      selectedIndex = clamp(selectedIndex, 0, Math.max(0, library.questions.length - 1));
+      saveToBrowser(false);
+      renderAll();
+    }
+
+    function moveQuestion(delta) {
+      const next = selectedIndex + delta;
+      if (next < 0 || next >= library.questions.length) return;
+      [library.questions[selectedIndex], library.questions[next]] = [library.questions[next], library.questions[selectedIndex]];
+      selectedIndex = next;
+      saveToBrowser(false);
+      renderAll();
+    }
+
+    function resetToDefault() {
+      if (!confirm("Reset to default letter and word questions? This will replace the current browser-saved question bank.")) return;
+      library = createDefaultLibrary();
+      selectedIndex = 0;
+      saveToBrowser(false);
+      renderAll();
+      showToast("Default questions restored.");
+    }
+
+    function resizeCanvas() {
+      const rect = wrapper.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      drawCanvas.width = Math.round(rect.width);
+      drawCanvas.height = Math.round(rect.height);
+      bgCanvas.width = Math.round(rect.width);
+      bgCanvas.height = Math.round(rect.height);
+      clearDrawing(false);
+      renderCurrentQuestion();
+    }
+
+    function clearDrawing(playSound = true) {
+      if (playSound) {
+        initAudio();
+        playPopSound();
+      }
+      drawCanvas.classList.remove("success-anim");
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      lastPointer = null;
+    }
+
+    async function renderCurrentQuestion() {
+      const myToken = ++renderToken;
+      const q = getQuestion();
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      targetMask = null;
+      if (!q) {
+        questionPrompt.textContent = "No questions. Please add questions in Question Editor.";
+        return;
+      }
+      q.fontFamily = normalizeFontFamily(q.fontFamily);
+      const practiceFont = getActiveTextFont();
+      questionPrompt.textContent = q.prompt || "Trace it.";
+      questionSelect.value = String(selectedIndex);
+      playFontSelect.value = practiceFont;
+      syncTextSizeEditor(q);
+      updateSessionNote();
+      if (q.type === "image" && q.imageData) {
+        await drawImageQuestion(q, myToken);
+      } else {
+        drawTextQuestion({ ...q, fontFamily: practiceFont });
+      }
+    }
+
+    function drawTextQuestion(q) {
+      const text = q.targetText || "Aa";
+      const fontSize = fitTextFontSize(text, q.fontFamily, getTextScale(q));
+      const font = `900 ${fontSize}px ${q.fontFamily || playFontSelect.value}`;
+      const lines = splitLines(text);
+      const lineHeight = fontSize * 1.05;
+      const startY = bgCanvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
+      const maxWidth = bgCanvas.width * 0.88;
+
+      bgCtx.save();
+      bgCtx.globalAlpha = q.guideOpacity ?? 0.4;
+      bgCtx.fillStyle = "#ffffff";
+      bgCtx.strokeStyle = "#ffffff";
+      bgCtx.textAlign = "center";
+      bgCtx.textBaseline = "middle";
+      bgCtx.font = font;
+      drawTextLinesWithDecorations(bgCtx, lines, bgCanvas.width / 2, startY, maxWidth, lineHeight, fontSize);
+      bgCtx.restore();
+
+      const maskCanvas = document.createElement("canvas");
+      maskCanvas.width = bgCanvas.width;
+      maskCanvas.height = bgCanvas.height;
+      const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
+      maskCtx.fillStyle = "#000000";
+      maskCtx.strokeStyle = "#000000";
+      maskCtx.textAlign = "center";
+      maskCtx.textBaseline = "middle";
+      maskCtx.font = font;
+      drawTextLinesWithDecorations(maskCtx, lines, maskCanvas.width / 2, startY, maxWidth, lineHeight, fontSize);
+      targetMask = createAlphaMask(maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data);
+    }
+
+    function drawTextLinesWithDecorations(ctx, lines, x, startY, maxWidth, lineHeight, fontSize) {
+      lines.forEach((line, index) => {
+        const y = startY + index * lineHeight;
+        ctx.fillText(line, x, y, maxWidth);
+      });
+    }
+
+    function fitTextFontSize(text, fontFamily, textScale = DEFAULT_TEXT_SCALE) {
+      const lines = splitLines(text);
+      const scale = clamp(Number(textScale || DEFAULT_TEXT_SCALE), MIN_TEXT_SCALE, MAX_TEXT_SCALE);
+      let size = Math.min(bgCanvas.height * 0.58 * scale, 280);
+      const maxWidth = bgCanvas.width * 0.94;
+      const maxHeight = bgCanvas.height * 0.86;
+      while (size > 36) {
+        bgCtx.font = `900 ${size}px ${fontFamily || playFontSelect.value}`;
+        const widest = Math.max(...lines.map((line) => bgCtx.measureText(line).width));
+        const totalHeight = lines.length * size * 1.05;
+        if (widest <= maxWidth && totalHeight <= maxHeight) break;
+        size -= 4;
+      }
+      return size;
+    }
+
+    function splitLines(text) {
+      const cleaned = String(text || "").trim() || "Aa";
+      if (cleaned.includes("\n")) return cleaned.split(/\n+/).filter(Boolean);
+      if (cleaned.length <= 12) return [cleaned];
+      const words = cleaned.split(/\s+/);
+      if (words.length === 1) {
+        const chunks = [];
+        for (let i = 0; i < cleaned.length; i += 10) chunks.push(cleaned.slice(i, i + 10));
+        return chunks;
+      }
+      const lines = [];
+      let line = "";
+      words.forEach((word) => {
+        const test = line ? `${line} ${word}` : word;
+        if (test.length > 16) {
+          if (line) lines.push(line);
+          line = word;
+        } else line = test;
+      });
+      if (line) lines.push(line);
+      return lines;
+    }
+
+    function drawImageQuestion(q, myToken) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          if (myToken !== renderToken) return resolve();
+          const box = fitImage(img.width, img.height, bgCanvas.width * 0.84, bgCanvas.height * 0.84);
+          const x = (bgCanvas.width - box.width) / 2;
+          const y = (bgCanvas.height - box.height) / 2;
+          bgCtx.save();
+          bgCtx.globalAlpha = q.guideOpacity ?? 0.4;
+          bgCtx.drawImage(img, x, y, box.width, box.height);
+          bgCtx.restore();
+          const maskCanvas = document.createElement("canvas");
+          maskCanvas.width = bgCanvas.width;
+          maskCanvas.height = bgCanvas.height;
+          const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
+          maskCtx.drawImage(img, x, y, box.width, box.height);
+          targetMask = createImageMask(maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height).data);
+          resolve();
+        };
+        img.onerror = () => { drawTextQuestion({ ...q, type: "text", targetText: q.targetText || "Image" }); resolve(); };
+        img.src = q.imageData;
+      });
+    }
+
+    function fitImage(imgW, imgH, maxW, maxH) {
+      const scale = Math.min(maxW / imgW, maxH / imgH, 1);
+      return { width: imgW * scale, height: imgH * scale };
+    }
+
+    function createAlphaMask(data) {
+      const mask = new Uint8Array(data.length / 4);
+      for (let i = 0, p = 0; i < data.length; i += 4, p++) mask[p] = data[i + 3] > 20 ? 1 : 0;
+      return mask;
+    }
+
+    function createImageMask(data) {
+      const mask = new Uint8Array(data.length / 4);
+      for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+        const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        const colorDistanceFromWhite = Math.abs(255 - r) + Math.abs(255 - g) + Math.abs(255 - b);
+        mask[p] = a > 25 && (a < 245 || luminance < 245 || colorDistanceFromWhite > 36) ? 1 : 0;
+      }
+      return mask;
+    }
+
+    function getPointerPosition(e) {
+      const point = e.touches ? e.touches[0] : e;
+      const rect = drawCanvas.getBoundingClientRect();
+      return { x: (point.clientX - rect.left) * (drawCanvas.width / rect.width), y: (point.clientY - rect.top) * (drawCanvas.height / rect.height) };
+    }
+
+    function startDrawing(e) {
+      initAudio();
+      isDrawing = true;
+      lastPointer = getPointerPosition(e);
+      drawPoint(lastPointer.x, lastPointer.y);
+      e.preventDefault();
+    }
+
+    function stopDrawing() {
+      isDrawing = false;
+      lastPointer = null;
+      drawCtx.beginPath();
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const q = getQuestion() || {};
+      const pos = getPointerPosition(e);
+      drawCtx.lineWidth = q.strokeWidth || 12;
+      drawCtx.lineCap = "round";
+      drawCtx.lineJoin = "round";
+      drawCtx.strokeStyle = q.penColor || "#ff00ff";
+      drawCtx.shadowBlur = 7;
+      drawCtx.shadowColor = q.penColor || "#ff00ff";
+      drawCtx.beginPath();
+      if (lastPointer) drawCtx.moveTo(lastPointer.x, lastPointer.y);
+      drawCtx.lineTo(pos.x, pos.y);
+      drawCtx.stroke();
+      lastPointer = pos;
+      if (Math.random() > 0.72) playSparkleSound(pos.x, pos.y);
+    }
+
+    function drawPoint(x, y) {
+      const q = getQuestion() || {};
+      drawCtx.fillStyle = q.penColor || "#ff00ff";
+      drawCtx.shadowBlur = 7;
+      drawCtx.shadowColor = q.penColor || "#ff00ff";
+      drawCtx.beginPath();
+      drawCtx.arc(x, y, (q.strokeWidth || 12) / 2, 0, Math.PI * 2);
+      drawCtx.fill();
+    }
+
+    function calculateScore() {
+      initAudio();
+      if (!targetMask) {
+        showToast("Please wait for the question to finish loading.");
+        return;
+      }
+      const drawData = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data;
+      let targetPixels = 0, drawnOnTarget = 0, drawnOffTarget = 0, drawnPixels = 0;
+      for (let i = 3, p = 0; i < drawData.length; i += 4, p++) {
+        const isTarget = targetMask[p] === 1;
+        const isDrawn = drawData[i] > 0;
+        if (isTarget) targetPixels++;
+        if (isDrawn) drawnPixels++;
+        if (isTarget && isDrawn) drawnOnTarget++;
+        if (!isTarget && isDrawn) drawnOffTarget++;
+      }
+      if (!drawnPixels) return showScoreBoard(0);
+      const coverage = Math.min((drawnOnTarget / Math.max(targetPixels, 1)) * 100 * 1.85, 100);
+      const accuracyPenalty = (drawnOffTarget / Math.max(drawnOnTarget, 1)) * 18;
+      const tooLittlePenalty = drawnOnTarget < targetPixels * 0.05 ? 35 : 0;
+      const finalScore = clamp(Math.round(coverage - accuracyPenalty - tooLittlePenalty), 0, 100);
+      showScoreBoard(finalScore);
+    }
+
+    function showScoreBoard(score) {
+      scoreBoard.classList.remove("hidden");
+      scoreText.textContent = `Score: ${score}`;
+      let praise = "Keep Trying!";
+      if (score >= 90) {
+        praise = "Perfect! ✨";
+        playWinSound();
+        spawnConfetti("mega");
+        drawCanvas.classList.add("success-anim");
+      } else if (score >= 70) {
+        praise = "Great Job!";
+        playPopSound();
+        spawnConfetti("mini");
+        drawCanvas.classList.add("success-anim");
+      } else playPopSound();
+      praiseText.textContent = praise;
+    }
+
+    function nextQuestion() {
+      initAudio();
+      playPopSound();
+      scoreBoard.classList.add("hidden");
+      clearDrawing(false);
+      if (!library.questions.length) return;
+      selectedIndex = (selectedIndex + 1) % library.questions.length;
+      renderAll();
+    }
+
+    function applyPlayFontToQuestion() {
+      const selectedFont = setActiveTextFont(playFontSelect.value);
+      const q = getQuestion();
+      if (q && q.type === "text") q.fontFamily = selectedFont;
+      saveToBrowser(false);
+      renderQuestionSelect();
+      resizeCanvas();
+      showToast("Handwriting font kept for next questions.");
+    }
+
+    function findPresetQuestionIndex(kind, value) {
+      const target = String(value).toLowerCase();
+      return library.questions.findIndex((q) => q.presetType === kind && String(q.presetValue || "").toLowerCase() === target);
+    }
+
+    function ensurePresetQuestion(kind, value) {
+      const existingIndex = findPresetQuestionIndex(kind, value);
+      if (existingIndex >= 0) return existingIndex;
+      const question = kind === "letter" ? makeLetterQuestion(String(value).toUpperCase()) : makeWordQuestion(String(value));
+      library.questions.push(question);
+      saveToBrowser(false);
+      return library.questions.length - 1;
+    }
+
+    function selectPresetQuestion(kind, value) {
+      selectedIndex = ensurePresetQuestion(kind, value);
+      scoreBoard.classList.add("hidden");
+      clearDrawing(false);
+      renderAll();
+      closePickerModal();
+      switchView("play");
+      showToast(`Now practicing: ${library.questions[selectedIndex].targetText}`);
+    }
+
+    function renderLetterPicker() {
+      pickerTitle.textContent = "Choose Letter";
+      pickerSubtitle.textContent = "點選要練習的字母。會自動切換到對應題目。";
+      pickerSearchWrap.classList.add("hidden");
+      pickerGrid.innerHTML = "";
+      BUILT_IN_LETTERS.forEach((letter) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "picker-chip";
+        button.innerHTML = `${letter} ${letter.toLowerCase()}<small>Letter</small>`;
+        button.addEventListener("click", () => selectPresetQuestion("letter", letter));
+        pickerGrid.appendChild(button);
+      });
+    }
+
+    function renderWordPicker(filter = "") {
+      const keyword = String(filter || "").trim().toLowerCase();
+      pickerTitle.textContent = "Choose Word";
+      pickerSubtitle.textContent = "點選要練習的內建單字。可以用搜尋框快速找字。";
+      pickerSearchWrap.classList.remove("hidden");
+      pickerGrid.innerHTML = "";
+      const words = BUILT_IN_WORDS.filter((word) => !keyword || word.toLowerCase().includes(keyword));
+      if (!words.length) {
+        const empty = document.createElement("div");
+        empty.className = "picker-empty";
+        empty.textContent = "找不到符合的單字。";
+        pickerGrid.appendChild(empty);
+        return;
+      }
+      words.forEach((word) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "picker-chip";
+        button.innerHTML = `${escapeHtml(word)}<small>${word.charAt(0).toUpperCase()}</small>`;
+        button.addEventListener("click", () => selectPresetQuestion("word", word));
+        pickerGrid.appendChild(button);
+      });
+    }
+
+    function openPickerModal(type) {
+      pickerModal.classList.remove("hidden");
+      pickerModal.setAttribute("aria-hidden", "false");
+      if (type === "letter") {
+        pickerSearchInput.value = "";
+        renderLetterPicker();
+      } else {
+        pickerSearchInput.value = "";
+        renderWordPicker("");
+        setTimeout(() => pickerSearchInput.focus(), 0);
+      }
+    }
+
+    function closePickerModal() {
+      pickerModal.classList.add("hidden");
+      pickerModal.setAttribute("aria-hidden", "true");
+      pickerSearchInput.value = "";
+    }
+
+    function attachEvents() {
+      playTabBtn.addEventListener("click", () => switchView("play"));
+      editorTabBtn.addEventListener("click", () => switchView("editor"));
+
+      questionSelect.addEventListener("change", (e) => {
+        initAudio();
+        playPopSound();
+        selectedIndex = Number(e.target.value);
+        scoreBoard.classList.add("hidden");
+        clearDrawing(false);
+        renderQuestionSelect();
+        resizeCanvas();
+      });
+
+      playFontSelect.addEventListener("change", applyPlayFontToQuestion);
+      document.getElementById("sizeDownBtn").addEventListener("click", () => changeTextSize(-0.10));
+      document.getElementById("sizeUpBtn").addEventListener("click", () => changeTextSize(0.10));
+      document.getElementById("pickLetterBtn").addEventListener("click", () => openPickerModal("letter"));
+      document.getElementById("pickWordBtn").addEventListener("click", () => openPickerModal("word"));
+      document.getElementById("clearBtn").addEventListener("click", () => { scoreBoard.classList.add("hidden"); clearDrawing(true); });
+      document.getElementById("submitBtn").addEventListener("click", calculateScore);
+      document.getElementById("nextBtn").addEventListener("click", nextQuestion);
+      document.getElementById("nextBtnTop").addEventListener("click", nextQuestion);
+
+      document.getElementById("closePickerBtn").addEventListener("click", closePickerModal);
+      pickerBackdrop.addEventListener("click", closePickerModal);
+      pickerSearchInput.addEventListener("input", () => renderWordPicker(pickerSearchInput.value));
+      window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !pickerModal.classList.contains("hidden")) closePickerModal(); });
+
+      drawCanvas.addEventListener("mousedown", startDrawing);
+      drawCanvas.addEventListener("mousemove", draw);
+      window.addEventListener("mouseup", stopDrawing);
+      drawCanvas.addEventListener("mouseleave", stopDrawing);
+      drawCanvas.addEventListener("touchstart", startDrawing, { passive: false });
+      drawCanvas.addEventListener("touchmove", draw, { passive: false });
+      drawCanvas.addEventListener("touchend", stopDrawing);
+      drawCanvas.addEventListener("touchcancel", stopDrawing);
+
+      window.addEventListener("resize", () => { resizeCelebrationCanvas(); resizeCanvas(); });
+
+      document.getElementById("addTextBtn").addEventListener("click", () => addQuestion("text"));
+      document.getElementById("addImageBtn").addEventListener("click", () => addQuestion("image"));
+      document.getElementById("saveBrowserBtn").addEventListener("click", () => saveToBrowser(true));
+      document.getElementById("exportJsonBtn").addEventListener("click", exportJson);
+      document.getElementById("importJsonBtn").addEventListener("click", () => importJsonInput.click());
+      document.getElementById("resetDefaultBtn").addEventListener("click", resetToDefault);
+      importJsonInput.addEventListener("change", (e) => importJsonFile(e.target.files[0]));
+
+      editType.addEventListener("change", () => updateCurrentQuestion({ type: editType.value }, true));
+      editPrompt.addEventListener("input", () => updateCurrentQuestion({ prompt: editPrompt.value }, false));
+      editTargetText.addEventListener("input", () => updateCurrentQuestion({ targetText: editTargetText.value, presetType: "", presetValue: "" }, false));
+      editFont.addEventListener("change", () => updateCurrentQuestion({ fontFamily: editFont.value }, false));
+      editTextScale.addEventListener("input", () => {
+        const value = clamp(Number(editTextScale.value), Math.round(MIN_TEXT_SCALE * 100), Math.round(MAX_TEXT_SCALE * 100));
+        textScaleValue.textContent = `${value}%`;
+        updateCurrentQuestion({ textScale: value / 100 }, false);
+      });
+      editGuideOpacity.addEventListener("input", () => {
+        const value = Number(editGuideOpacity.value);
+        opacityValue.textContent = `${value}%`;
+        updateCurrentQuestion({ guideOpacity: value / 100 }, false);
+      });
+      editStrokeWidth.addEventListener("input", () => updateCurrentQuestion({ strokeWidth: Number(editStrokeWidth.value) }, false));
+      editPenColor.addEventListener("change", () => updateCurrentQuestion({ penColor: editPenColor.value }, false));
+
+      editImageInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          updateCurrentQuestion({ imageData: reader.result, type: "image" }, true);
+          editImageInput.value = "";
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById("moveUpBtn").addEventListener("click", () => moveQuestion(-1));
+      document.getElementById("moveDownBtn").addEventListener("click", () => moveQuestion(1));
+      document.getElementById("duplicateBtn").addEventListener("click", duplicateQuestion);
+      document.getElementById("deleteQuestionBtn").addEventListener("click", deleteQuestion);
+    }
+
+    attachEvents();
+    resizeCelebrationCanvas();
+    loadActiveTextFont();
+    loadFromBrowser();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => resizeCanvas());
+  </script>
+</body>
+</html>
